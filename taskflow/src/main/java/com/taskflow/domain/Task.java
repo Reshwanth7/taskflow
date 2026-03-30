@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +27,7 @@ public class Task {
     @Column(nullable = false)
     private String title;
 
+    @Column(length = 2000)
     private String description;
 
     private LocalDate dueDate;
@@ -37,6 +39,11 @@ public class Task {
     @NotNull
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    private Long ownerId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -52,4 +59,15 @@ public class Task {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags;
+
+    @PrePersist
+    public void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
