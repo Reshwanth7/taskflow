@@ -1,5 +1,6 @@
 package com.taskflow.service;
 
+import com.taskflow.domain.Task;
 import com.taskflow.dto.TaskRequestDTO;
 import com.taskflow.dto.TaskResponseDTO;
 
@@ -16,5 +17,7 @@ public interface TaskService {
     TaskResponseDTO getTask(Long id);
 
     List<TaskResponseDTO> getAllTasks();
+    List<Task> getAllTasksSummary();
+    Task getTaskById(Long id);
 }
 

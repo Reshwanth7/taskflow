@@ -6,8 +6,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Schema(description = "Task response payload")
-public record TaskResponseDTO(
+@Schema(description = "Detailed task view with progress metrics")
+public record TaskDetailsDTO(
         @Schema(example = "1")
         Long id,
         @Schema(example = "Prepare sprint demo")
@@ -24,9 +24,13 @@ public record TaskResponseDTO(
         LocalDateTime createdAt,
         @Schema(example = "2026-03-31T12:20:45")
         LocalDateTime updatedAt,
-        @ArraySchema(schema = @Schema(implementation = SubTaskResponseDTO.class))
-        List<SubTaskResponseDTO> subTasks,
-        @ArraySchema(schema = @Schema(implementation = TagResponseDTO.class))
-        List<TagResponseDTO> tags
+        @Schema(example = "4")
+        int totalSubTasks,
+        @Schema(example = "2")
+        int completedSubTasks,
+        @Schema(example = "50")
+        int progressPercentage,
+        @ArraySchema(schema = @Schema(implementation = SubTaskDTO.class))
+        List<SubTaskDTO> subTasks
 ) {}
 

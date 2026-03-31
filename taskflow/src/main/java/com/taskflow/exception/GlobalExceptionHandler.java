@@ -1,5 +1,6 @@
 package com.taskflow.exception;
 
+import com.taskflow.config.ApiResponse;
 import com.taskflow.controller.TaskController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -30,11 +33,20 @@ public class GlobalExceptionHandler {
 
     // 404
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
-        log.error("Resource not found: {}", ex.getMessage());
+    public ResponseEntity<ApiResponse<String>> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.fail(ex.getMessage()));
+    }
 
-        ApiError error = buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request);
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidation(MethodArgumentNotValidException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(err ->
+                errors.put(err.getField(), err.getDefaultMessage())
+        );
+
+        return ResponseEntity.badRequest().body(ApiResponse.fail(errors));
     }
 
     // 400
@@ -46,20 +58,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    // Validation errors (DTO @Valid)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
-
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                .findFirst()
-                .orElse("Validation error");
-        log.error("Validation failed: {}", message);
-
-
-        ApiError error = buildError(HttpStatus.BAD_REQUEST, message, request);
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
 
     // Constraint violations (path variables, request params)
     @ExceptionHandler(ConstraintViolationException.class)
@@ -70,10 +68,11 @@ public class GlobalExceptionHandler {
 
     // Fallback for all other exceptions
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGeneral(Exception ex, HttpServletRequest request) {
-        log.error("Unexpected error occurred", ex);
-        ApiError error = buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<ApiResponse<String>> handleGeneral(Exception ex) {
+        log.error("Unhandled error: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.fail("Something went wrong"));
     }
+
 }
 

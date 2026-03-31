@@ -4,6 +4,7 @@ import com.taskflow.domain.Tag;
 import com.taskflow.domain.Task;
 import com.taskflow.dto.TaskRequestDTO;
 import com.taskflow.dto.TaskResponseDTO;
+import com.taskflow.exception.ResourceNotFoundException;
 import com.taskflow.mapper.SubTaskMapper;
 import com.taskflow.mapper.TagMapper;
 import com.taskflow.mapper.TaskMapper;
@@ -129,5 +130,20 @@ public class TaskServiceImpl implements TaskService {
                 .map(TaskMapper::toDTO)
                 .toList();
     }
+
+    @Override
+    public List<Task> getAllTasksSummary() {
+
+        log.debug("Fetching all tasks Summary");
+
+        return taskRepository.findAll();
+    }
+
+   @Override
+    public Task getTaskById(Long id) {
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+    }
+
 }
 
