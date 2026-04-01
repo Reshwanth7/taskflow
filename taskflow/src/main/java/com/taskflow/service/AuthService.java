@@ -30,15 +30,11 @@ public class AuthService {
             throw new RuntimeException("Username already exists");
         }
 
-        Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new RuntimeException("Default role not found"));
-
         User user = User.builder()
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))
                 .build();
-
-        user.getRoles().add(userRole);
+        request.roles().forEach(role -> user.getRoles().add(roleRepository.findByName(role).orElseThrow(() -> new RuntimeException("Resource Not Found Exception"))));
 
         userRepository.save(user);
 

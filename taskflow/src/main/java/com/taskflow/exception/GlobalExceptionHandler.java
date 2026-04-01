@@ -1,7 +1,6 @@
 package com.taskflow.exception;
 
 import com.taskflow.config.ApiResponse;
-import com.taskflow.controller.TaskController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -64,6 +63,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleConstraint(ConstraintViolationException ex, HttpServletRequest request) {
         ApiError error = buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    // Constraint violations (path variables, request params)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        ApiError error = buildError(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     // Fallback for all other exceptions
